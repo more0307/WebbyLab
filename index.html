@@ -198,7 +198,7 @@
 </div>
 
 <script>
-    const serverUrl = 'http://localhost:8050/api/v1';
+    const serverUrl = 'http://localhost:8000/api/v1';
 
     function login() {
         const email = document.getElementById('email').value;
@@ -208,7 +208,7 @@
             password
         };
 
-        fetch('http://localhost:8050/api/v1/auth/login', {
+        fetch('http://localhost:8000/api/v1/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -244,7 +244,7 @@
             confirmPassword
         };
 
-        fetch('http://localhost:8050/api/v1/auth/register', {
+        fetch('http://localhost:8000/api/v1/auth/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
