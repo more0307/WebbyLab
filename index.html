@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фільми - Система управління</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        .container {
+            margin: 20px;
+        }
+        .form-container, .movies-list {
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, select, button {
+            padding: 8px;
+            margin-top: 5px;
+            width: 100%;
+            max-width: 300px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .movie-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
+        }
+        .movie-item .actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        .movie-item .actions button {
+            background-color: #f44336;
+        }
+        .movie-item .actions button:hover {
+            background-color: #d32f2f;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .file-input {
+            margin-top: 10px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        a {
+            color: blue;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Керування Фільмами</h1>
+</header>
+
+<div class="container">
+    <div class="form-container">
+        <h2>Авторизація</h2>
+        <div class="input-group">
+            <label for="email">email:</label>
+            <input type="text" id="email" placeholder="Введіть email користувача">
+        </div>
+        <div class="input-group">
+            <label for="password">Пароль:</label>
+            <input type="password" id="password" placeholder="Введіть пароль">
+        </div>
+        <button onclick="login()">Увійти</button>
+    </div>
+
+    <div class="form-container">
+        <h2>Реєстрація</h2>
+        <div class="input-group">
+            <label for="email">email:</label>
+            <input type="text" id="registerEmail" placeholder="Введіть email користувача">
+        </div>
+        <div class="input-group">
+            <label for="name">name:</label>
+            <input type="text" id="registerName" placeholder="Введіть name користувача">
+        </div>
+        <div class="input-group">
+            <label for="password">password:</label>
+            <input type="password" id="registerPassword" placeholder="Введіть пароль">
+        </div>
+        <div class="input-group">
+            <label for="password">confirm password:</label>
+            <input type="password" id="registerConfirmPassword" placeholder="Введіть повторно пароль">
+        </div>
+        <button onclick="register()">Зареєструватись</button>
+    </div>
+
+    <div class="form-container">
+        <h2>Додати Фільм</h2>
+        <div class="input-group">
+            <label for="movieTitle">Назва фільму:</label>
+            <input type="text" id="movieTitle" placeholder="Назва фільму">
+        </div>
+        <div class="input-group">
+            <label for="movieYear">Рік випуску:</label>
+            <input type="number" id="movieYear" placeholder="Рік випуску">
+        </div>
+        <div class="input-group">
+            <label for="movieFormat">Формат:</label>
+            <select id="movieFormat">
+                <option value="VHS">VHS</option>
+                <option value="DVD">DVD</option>
+                <option value="Blu-ray">Blu-ray</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="actors">Актори (через кому):</label>
+            <input type="text" id="actors" placeholder="Ім'я та прізвище актора">
+        </div>
+        <button onclick="addMovie()">Додати фільм</button>
+    </div>
+
+    <div class="form-container">
+        <h2>Список фільмів</h2>
+        <div class="search-bar">
+            <input type="text" id="searchByTitle" placeholder="Пошук за назвою" oninput="searchMovieByTitle()">
+        </div>
+        <div class="movies-list" id="moviesList"></div>
+    </div>
+
+    <div class="form-container">
+        <h2>Імпорт фільмів з файлу</h2>
+        <input type="file" id="fileInput" class="file-input">
+        <button onclick="importMovies()">Імпортувати</button>
+    </div>
+</div>
+
+<div id="movieModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2>Інформація про фільм</h2>
+        <p id="movieInfo"></p>
+    </div>
+</div>
+
+<script>
+    const serverUrl = 'http://localhost:8050/api/v1';
+
+    function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const credentials = {
+            email,
+            password
+        };
+
+        fetch('http://localhost:8050/api/v1/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(credentials),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Не вдалося авторизуватися');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const token = data.data.access_token;
+                localStorage.setItem('authToken', token);
+            })
+            .catch(error => {
+                console.error('Помилка:', error);
+                alert('Помилка авторизації');
+            });
+    }
+
+    function register() {
+        const email = document.getElementById('registerEmail').value;
+        const name = document.getElementById('registerName').value;
+        const password = document.getElementById('registerPassword').value;
+        const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+        const credentials = {
+            email,
+            password,
+            name,
+            confirmPassword
+        };
+
+        fetch('http://localhost:8050/api/v1/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(credentials),
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Не вдалося авторизуватися');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const token = data.data.access_token;
+                localStorage.setItem('authToken', token);
+            })
+            .catch(error => {
+                console.error('Помилка:', error);
+                alert('Помилка авторизації');
+            });
+    }
+
+    function addMovie() {
+        const token = localStorage.getItem('authToken');
+
+        const title = document.getElementById('movieTitle').value;
+        const year = document.getElementById('movieYear').value;
+        const format = document.getElementById('movieFormat').value;
+        const actors = document.getElementById('actors').value;
+
+        const movie = {
+            title, year: Number(year), format, actors: actors.split(',').map(actor => actor.trim())
+        };
+
+        fetch(`${serverUrl}/movies`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(movie),
+        }).then(response => response.json()).then(data => {
+            console.log('Фільм додано', data);
+            loadMovies();
+        });
+    }
+
+    function loadMovies() {
+        const token = localStorage.getItem('authToken');
+
+        fetch(`${serverUrl}/movies`, { headers: {'Authorization': `Bearer ${token}`,}})
+            .then(response => response.json())
+            .then(data => {
+                data = data.data
+                const moviesList = document.getElementById('moviesList');
+                moviesList.innerHTML = '';
+                data.forEach(movie => {
+                    const movieItem = document.createElement('div');
+                    movieItem.classList.add('movie-item');
+                    movieItem.innerHTML = `
+                            <strong>${movie.title}</strong> (${movie.year})
+                            <div class="actions">
+                                <button onclick="deleteMovie(${movie.id})">Видалити</button>
+                                <button onclick="showMovieInfo(${movie.id})">Показати</button>
+                            </div>
+                        `;
+                    moviesList.appendChild(movieItem);
+                });
+            });
+    }
+
+    function searchMovieByTitle() {
+        const token = localStorage.getItem('authToken');
+
+        const searchQuery = document.getElementById('searchByTitle').value;
+        fetch(`${serverUrl}/movies?title=${searchQuery}`, {headers: {'Authorization': `Bearer ${token}`,}})
+            .then(response => response.json())
+            .then(data => {
+                data = data.data;
+                const moviesList = document.getElementById('moviesList');
+                moviesList.innerHTML = '';
+                data.forEach(movie => {
+                    const movieItem = document.createElement('div');
+                    movieItem.classList.add('movie-item');
+                    movieItem.innerHTML = `
+                            <strong>${movie.title}</strong> (${movie.year})
+                            <div class="actions">
+                                <button onclick="deleteMovie(${movie.id})">Видалити</button>
+                                <button onclick="showMovieInfo(${movie.id})">Показати</button>
+                            </div>
+                        `;
+                    moviesList.appendChild(movieItem);
+                });
+            });
+    }
+
+    function showMovieInfo(id) {
+        const token = localStorage.getItem('authToken');
+
+        fetch(`${serverUrl}/movies/${id}`, {headers: {'Authorization': `Bearer ${token}`,}})
+            .then(response => response.json())
+            .then(data => {
+                data = data.data;
+                const actorNames = data.actors ? data.actors.map(actor => actor.name).join(', ') : '';
+
+                let movieInfo = `Назва: ${data.title}\nРік: ${data.year}\nАктори: ${actorNames}`;
+
+                if (data.source) {
+                    movieInfo += `<br>Файл доступний для завантаження: <a href="${serverUrl}/movies/download/${data.source}" target="_blank">Завантажити файл</a>`;
+                }
+
+                document.getElementById('movieInfo').innerHTML = movieInfo;
+
+                document.getElementById('movieModal').style.display = "block";
+            })
+            .catch(error => console.error('Error fetching movie info:', error));
+    }
+
+    function closeModal() {
+        document.getElementById('movieModal').style.display = "none";
+    }
+
+    function deleteMovie(id) {
+        const token = localStorage.getItem('authToken');
+
+        fetch(`${serverUrl}/movies/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        }).then(response => response.json()).then(data => {
+            console.log('Фільм видалено', data);
+            loadMovies();
+        });
+    }
+
+    function importMovies() {
+        const token = localStorage.getItem('authToken');
+
+        const file = document.getElementById('fileInput').files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch(`${serverUrl}/movies/import`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            }
+        }).then(response => response.json()).then(data => {
+            console.log('Фільми імпортовані', data);
+            loadMovies();
+        });
+    }
+
+    window.onload = loadMovies;
+</script>
+</body>
+</html>
