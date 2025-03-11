@@ -17,7 +17,7 @@ module.exports = {
         allowNull: false,
       },
       format: {
-        type: Sequelize.ENUM('VHS', 'DVD', 'Blu-ray'),
+        type: Sequelize.ENUM('VHS', 'DVD', 'Blu-Ray'),
         allowNull: false,
       },
       source: {

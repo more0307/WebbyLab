@@ -18,7 +18,7 @@ export class MovieService {
     const whereClause = title
       ? {
           title: {
-            [Op.like]: `%${title.toLowerCase()}%`,
+            [Op.iLike]: `%${title.toLowerCase()}%`,
           },
         }
       : {};

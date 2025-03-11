@@ -8,6 +8,7 @@ import { AuthenticateHttpMiddleware } from '../handlers/http/middlewares/auth.ht
 const router = Router();
 
 router.get('/download/:fileName', CallHttpMiddleware(MovieHttpHandler, 'download'));
+router.get('/listByActor', CallHttpMiddleware(MovieHttpHandler, 'listByActor'));
 
 router.use(AuthenticateHttpMiddleware);
 

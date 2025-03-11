@@ -164,7 +164,7 @@
             <select id="movieFormat">
                 <option value="VHS">VHS</option>
                 <option value="DVD">DVD</option>
-                <option value="Blu-ray">Blu-ray</option>
+                <option value="Blu-Ray">Blu-Ray</option>
             </select>
         </div>
         <div class="input-group">
@@ -178,6 +178,7 @@
         <h2>Список фільмів</h2>
         <div class="search-bar">
             <input type="text" id="searchByTitle" placeholder="Пошук за назвою" oninput="searchMovieByTitle()">
+            <input type="text" id="searchByActor" placeholder="Пошук за автором" oninput="searchMovieByActor()">
         </div>
         <div class="movies-list" id="moviesList"></div>
     </div>
@@ -339,6 +340,40 @@
                     moviesList.appendChild(movieItem);
                 });
             });
+    }
+
+    function searchMovieByActor() {
+        const token = localStorage.getItem('authToken');
+
+        const searchQuery = document.getElementById('searchByActor').value;
+        fetch(`${serverUrl}/actors?name=${searchQuery}`, {headers: {'Authorization': `Bearer ${token}`,}})
+          .then(response => response.json())
+          .then(data => {
+              data = data.data;
+              data = data.reduce((acc, actor) => {
+                  actor.movies.forEach(movie => {
+                      if (!acc.some(existingMovie => existingMovie.id === movie.id)) {
+                          acc.push(movie);
+                      }
+                  });
+                  return acc;
+              }, []);
+
+              const moviesList = document.getElementById('moviesList');
+              moviesList.innerHTML = '';
+              data.forEach(movie => {
+                  const movieItem = document.createElement('div');
+                  movieItem.classList.add('movie-item');
+                  movieItem.innerHTML = `
+                            <strong>${movie.title}</strong> (${movie.year})
+                            <div class="actions">
+                                <button onclick="deleteMovie(${movie.id})">Видалити</button>
+                                <button onclick="showMovieInfo(${movie.id})">Показати</button>
+                            </div>
+                        `;
+                  moviesList.appendChild(movieItem);
+              });
+          });
     }
 
     function showMovieInfo(id) {

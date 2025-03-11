@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { MovieRepository } from '../../repositories/movie.repository';
-import { Sequelize } from 'sequelize';
 import { NotFoundException } from '../../exceptions/not-found.exception';
 import { FileService } from '../../services/file.service';
 import { MovieService } from '../../services/movie.service';
@@ -8,9 +7,11 @@ import path from 'path';
 import fs from 'fs';
 import Actor from '../../db/models/actor.model';
 import { ParamException } from '../../exceptions/param.exception';
+import { ActorService } from '../../services/actor.service';
 
 export class MovieHttpHandler {
   protected readonly repository: MovieRepository = new MovieRepository();
+  protected readonly actorService: ActorService = new ActorService();
   protected readonly service: MovieService = new MovieService();
   protected readonly fileService: FileService = new FileService();
 
@@ -34,7 +35,6 @@ export class MovieHttpHandler {
    * @access private
    */
   public async list(req: Request, res: Response) {
-    console.log(req.user);
     const { title } = req.query as { title: string | undefined };
 
     const movie = await this.service.list(title);

@@ -1,5 +1,5 @@
 import sequelize from '../init';
-import { BulkCreateOptions, DataTypes, Model, Optional } from 'sequelize';
+import { Association, BulkCreateOptions, DataTypes, Model, Optional } from 'sequelize';
 import { MovieFormat } from '../../enums/movie-format.enum';
 import Actor from './actor.model';
 import MovieActor from './movie-actors.model';
@@ -12,14 +12,16 @@ export interface MovieAttributes {
   format: MovieFormat;
 }
 
-interface MovieCreationAttributes extends Optional<MovieAttributes, 'id'> {}
-
-export class Movie extends Model<MovieAttributes, MovieCreationAttributes> implements MovieAttributes {
+export class Movie extends Model<MovieAttributes, Optional<MovieAttributes, 'id'>> implements MovieAttributes {
   public id!: number;
   public title!: string;
   public year!: number;
   public format!: MovieFormat;
   public source!: string;
+
+  public static associations: {
+    actors: Association<Actor, Movie>;
+  };
 
   public addActors!: (actors: Actor[], options: BulkCreateOptions) => Promise<void>;
 }
@@ -54,11 +56,15 @@ Movie.init(
 
 Movie.belongsToMany(Actor, {
   through: MovieActor,
+  foreignKey: 'movieId',
+  otherKey: 'actorId',
   as: 'actors',
 });
 
 Actor.belongsToMany(Movie, {
   through: MovieActor,
+  foreignKey: 'actorId',
+  otherKey: 'movieId',
   as: 'movies',
 });
 

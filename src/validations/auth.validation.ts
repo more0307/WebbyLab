@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { MovieFormat } from '../enums/movie-format.enum';
 
 export const registerSchema = z
   .object({
